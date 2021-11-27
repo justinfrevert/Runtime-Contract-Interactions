@@ -6,6 +6,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -18,33 +19,38 @@ use sp_runtime::{
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, MultiSignature,
 };
-use frame_system::limits::{BlockLength, BlockWeights};
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-use pallet_contracts::weights::WeightInfo;
+use pallet_contracts::{
+	chain_extension::{
+		ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
+	},
+	weights::WeightInfo,
+};
 
 use codec::Encode;
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
-	construct_runtime, parameter_types,
+	construct_runtime,
+	log::{error, trace},
+	parameter_types,
 	traits::{KeyOwnerProofSystem, Randomness, StorageInfo},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
-		IdentityFee, Weight, DispatchClass
+		DispatchClass, IdentityFee, Weight,
 	},
 	StorageValue,
-	log::{error, trace}
 };
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-pub use sp_runtime::{Perbill, Permill, DispatchError};
+pub use sp_runtime::{DispatchError, Perbill, Permill};
 
 /// Import the template pallet.
 pub use pallet_template;
@@ -157,6 +163,38 @@ pub fn native_version() -> NativeVersion {
 }
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
+
+impl ChainExtension<Runtime> for FetchRandomExtension {
+	fn call<E: Ext>(func_id: u32, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
+	where
+		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
+	{
+		match func_id {
+			1101 => {
+				let mut env = env.buf_in_buf_out();
+				let random_seed = crate::RandomnessCollectiveFlip::random_seed().0;
+				let random_slice = random_seed.encode();
+				trace!(
+					target: "runtime",
+					"[ChainExtension]|call|func_id:{:}",
+					func_id
+				);
+				env.write(&random_slice, false, None)
+					.map_err(|_| DispatchError::Other("ChainExtension failed to call random"))?;
+			},
+
+			_ => {
+				error!("Called an unregistered `func_id`: {:}", func_id);
+				return Err(DispatchError::Other("Unimplemented func_id"))
+			},
+		}
+		Ok(RetVal::Converging(0))
+	}
+
+	fn enabled() -> bool {
+		true
+	}
+}
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
@@ -338,13 +376,12 @@ impl pallet_contracts::Config for Runtime {
 	type ContractDeposit = ContractDeposit;
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = ();
+	type ChainExtension = FetchRandomExtension;
 	type DeletionQueueDepth = DeletionQueueDepth;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
 	type CallStack = [pallet_contracts::Frame<Self>; 31];
 }
-
 
 parameter_types! {
 	pub const TransactionByteFee: Balance = 1;
