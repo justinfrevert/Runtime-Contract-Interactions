@@ -1,20 +1,13 @@
 use crate::{mock::*, Error};
-use frame_support::{assert_noop, assert_ok};
+use frame_support::assert_ok, weights::Weight};
+use sp_runtime::traits::Hash;
 
 #[test]
-fn it_works_for_default_value() {
-	new_test_ext().execute_with(|| {
-		// Dispatch a signed extrinsic.
-		assert_ok!(TemplateModule::do_something(Origin::signed(1), 42));
-		// Read pallet storage and assert an expected result.
-		assert_eq!(TemplateModule::something(), Some(42));
-	});
-}
-
-#[test]
-fn correct_error_for_none_value() {
-	new_test_ext().execute_with(|| {
-		// Ensure the expected error is thrown when no value is present.
-		assert_noop!(TemplateModule::cause_error(Origin::signed(1)), Error::<Test>::NoneValue);
-	});
+fn it_accepts_calls_from_chain_extension() {
+	let origin = Origin::signed(ALICE);
+	let chain_extension_input = 5;
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(TemplateModule::insert_number(origin, chain_extension_input));
+		assert_eq!(TemplateModule::get_items(ALICE), chain_extension_input);
+	})
 }
