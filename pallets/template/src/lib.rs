@@ -13,9 +13,13 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
+pub mod weights;
+pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {
+	use super::*;
+
 	use frame_support::{
 		dispatch::DispatchResult, inherent::Vec, pallet_prelude::*, traits::Currency,
 	};
@@ -32,6 +36,7 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Currency: Currency<Self::AccountId>;
+		type WeightInfo: WeightInfo;
 	}
 
 	pub const MAX_LENGTH: usize = 50;
@@ -100,7 +105,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::insert_number(*val))]
 		// An extrinsic for demonstrating calls originating from a smart contract
 		pub fn insert_number(origin: OriginFor<T>, val: u32) -> DispatchResult {
 			let who = ensure_signed(origin)?;
