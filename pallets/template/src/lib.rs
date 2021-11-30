@@ -39,6 +39,7 @@ pub mod pallet {
 		type WeightInfo: WeightInfo;
 	}
 
+	// Some const value to compare inputs of unknown size to
 	pub const MAX_LENGTH: usize = 50;
 
 	#[pallet::pallet]
@@ -53,7 +54,9 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		CalledContract(T::AccountId),
+		/// Event to display when call is made from a smart contract to the extrinsic
+		CalledContractFromPallet(T::AccountId),
+		/// Event to display when call is made from the extrinsic to a smart contract
 		CalledPalletFromContract(u32),
 	}
 
@@ -70,17 +73,27 @@ pub mod pallet {
 		T::AccountId: AsRef<[u8]>,
 	{
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-		// A generic example to demonstrate calling a smart contract from an extrinsic
+		/// A generic extrinsic wrapper around
+		/// [pallet_contracts::bare_call](https://github.com/paritytech/substrate/blob/352c46a648a5f2d4526e790a184daa4a1ffdb3bf/frame/contracts/src/lib.rs#L545-L562)
+		/// to demonstrate calling a smart contract from an extrinsic.
+		/// 
+		/// * `dest` - A destination account id for the contract being targeted
+		/// * `selector` - The 'selector' of the ink! smart contract function.
+		/// This can be retrived from the compiled `metadata.json`. It's possible to
+		/// [specify a selector](https://paritytech.github.io/ink-docs/macros-attributes/selector/) in
+		/// the smart contract itself.
+		/// * `arg` - An argument to be passed to the smart contract. 
+		/// * `gas_limit` - The gas limit passed to the contract bare_call.
+		/// This example should work when given a value of around 10000000000
 		pub fn call_smart_contract(
 			origin: OriginFor<T>,
 			dest: T::AccountId,
-			// selector as given in the metadata.json file of the compiled contract
 			mut selector: Vec<u8>,
 			arg: u32,
-			// gas_limit should be set somewhere ~10000000000
 			#[pallet::compact] gas_limit: Weight,
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
+			// Check against unbounded input
 			ensure!(selector.len() < MAX_LENGTH, Error::<T>::ArgumentTooLarge);
 			// Amount to transfer
 			let value: BalanceOf<T> = Default::default();
@@ -89,6 +102,7 @@ pub mod pallet {
 			data.append(&mut selector);
 			data.append(&mut arg_enc);
 
+			// Do the actual call to the smart contract function
 			pallet_contracts::Pallet::<T>::bare_call(
 				who,
 				dest.clone(),
@@ -99,12 +113,13 @@ pub mod pallet {
 			)
 			.result?;
 
-			Self::deposit_event(Event::CalledContract(dest.clone()));
+			Self::deposit_event(Event::CalledContractFromPallet(dest.clone()));
 			Ok(())
 		}
 
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::insert_number(*val))]
-		// An extrinsic for demonstrating calls originating from a smart contract
+		/// A storage extrinsic for demonstrating calls originating from a smart contract
+		/// * `val` - Some integer to be stored.
 		pub fn insert_number(origin: OriginFor<T>, val: u32) -> DispatchResult {
 			ensure_signed(origin)?;
 			// Do something with the value

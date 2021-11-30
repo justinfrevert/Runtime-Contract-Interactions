@@ -9,11 +9,15 @@ mod tests;
 #[ink::chain_extension]
 pub trait MyExtension {
 	type ErrorCode = ContractError;
-	// Specify the function id. We will `match` on this in the runtime to map this to some custom
-	// pallet extrinsic
+	// Use the #[ink(extension = {func_id})] syntax to specify the function id.
+    // We will `match` on this in the runtime to map this to some custom pallet extrinsic
 	#[ink(extension = 1)]
+    /// Calls func_id 1, defined in the runtime, which receives a number and stores it in
+    /// a runtime storage value
 	fn do_store_in_runtime(key: u32) -> Result<u32, ContractError>;
 	#[ink(extension = 2)]
+    /// Calls func_id 2, which uses pallet_balances::transfer to perform a transfer of
+    /// `value` from the sender, to `recipient`
 	fn do_balance_transfer(value: u32, recipient: AccountId) -> Result<u32, ContractError>;
 }
 
@@ -57,7 +61,8 @@ impl Environment for CustomEnvironment {
 }
 
 #[ink::contract(env = crate::CustomEnvironment)]
-mod runtime_extension {
+/// A smart contract with a custom environment, necessary for the chain extension
+mod contract_with_extension {
 	use super::ContractError;
 
 	#[cfg(test)]
@@ -88,8 +93,8 @@ mod runtime_extension {
             self.stored_number
 		}
 
-		/// A simple storage function meant to demonstrate calling a smart contract with an argument
-		/// sent from a custom pallet
+		/// A simple storage function meant to demonstrate calling a smart contract from a custom pallet.
+        /// Here, we've set the `selector` explicitly to make it simpler to target this function.
 		#[ink(message, selector = 0xABCDEF)]
 		pub fn set_value(&mut self, value: u32) -> Result<(), ContractError> {
 			self.stored_number = value;
@@ -98,7 +103,7 @@ mod runtime_extension {
 		}
 
 		/// Invoke the extended custom pallet extrinsic with the argument given to the smart
-		/// contract funtion
+		/// contract function
 		#[ink(message)]
 		pub fn store_in_runtime(&mut self, value: u32) -> Result<(), ContractError> {
 			self.env().extension().do_store_in_runtime(value)?;
