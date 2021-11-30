@@ -7,7 +7,7 @@ use ink_lang as ink;
 mod tests;
 
 #[ink::chain_extension]
-pub trait MyExtension {
+pub trait ChainExtension {
 	type ErrorCode = ContractError;
 	// Use the #[ink(extension = {func_id})] syntax to specify the function id.
     // We will `match` on this in the runtime to map this to some custom pallet extrinsic
@@ -57,7 +57,7 @@ impl Environment for CustomEnvironment {
 	type Timestamp = <ink_env::DefaultEnvironment as Environment>::Timestamp;
 	// type RentFraction = <ink_env::DefaultEnvironment as Environment>::RentFraction;
 
-	type ChainExtension = MyExtension;
+	type ChainExtension = ChainExtension;
 }
 
 #[ink::contract(env = crate::CustomEnvironment)]

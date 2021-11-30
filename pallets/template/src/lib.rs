@@ -73,16 +73,16 @@ pub mod pallet {
 		T::AccountId: AsRef<[u8]>,
 	{
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-		/// A generic extrinsic wrapper around
+		/// A generic extrinsic to call
 		/// [pallet_contracts::bare_call](https://github.com/paritytech/substrate/blob/352c46a648a5f2d4526e790a184daa4a1ffdb3bf/frame/contracts/src/lib.rs#L545-L562)
 		/// to demonstrate calling a smart contract from an extrinsic.
-		/// 
+		///
 		/// * `dest` - A destination account id for the contract being targeted
 		/// * `selector` - The 'selector' of the ink! smart contract function.
 		/// This can be retrived from the compiled `metadata.json`. It's possible to
 		/// [specify a selector](https://paritytech.github.io/ink-docs/macros-attributes/selector/) in
 		/// the smart contract itself.
-		/// * `arg` - An argument to be passed to the smart contract. 
+		/// * `arg` - An argument to be passed to the smart contract.
 		/// * `gas_limit` - The gas limit passed to the contract bare_call.
 		/// This example should work when given a value of around 10000000000
 		pub fn call_smart_contract(

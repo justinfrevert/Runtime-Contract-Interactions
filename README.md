@@ -7,7 +7,7 @@
 
 ## Motivation
 
-Examples of contract-to-runtime interactions are frequently asked about. `Chain extensions` are recommended for this case, and there are [several examples of them available](https://paritytech.github.io/ink-docs/macros-attributes/chain-extension). A full example of interactions made between both ink! smart contracts and a substrate runtime has not been developed in a recent Substrate version.
+Examples of contract-to-runtime interactions are asked about in the context of Substrate support. `Chain extensions` are recommended for this case, and there are [several examples of them available](https://paritytech.github.io/ink-docs/macros-attributes/chain-extension). An example repository demonstrating chain extensions as well as pallet-to-contract calls has not been developed in a recent Substrate version.
 
 ## Prerequisites
 
@@ -36,13 +36,13 @@ cargo install cargo-contract --vers ^0.15 --force --locked
 
 ### Contract-to-Runtime Interactions
 
-The project demonstrates contract-to-runtime interactions through the use of Chain extensions. Chain Extensions allow a runtime developer to extend runtime functions to smart contracts. The project shows off this concept by making available a custom pallet function, and a function from one of the runtime dependencies to smart contracts.
+The project demonstrates contract-to-runtime interactions through the use of Chain extensions. Chain Extensions allow a runtime developer to extend runtime functions to smart contracts. In the case of this example, the functions being extended are a custom pallet extrinsic, and the `pallet_balances::transfer` extrinsic.
 
 See also the `rand-extension` chain extension code example, which is one example that this project _extended_.
 
 ### Runtime-to-Contract Interactions
 
-Runtime-to-contract interactions are enabled through invocations of the pallet-contract's own `bare_call` method, invoked from a custom pallet extrinsic. The extrinsic is called `call_smart_contract` and is meant to demonstrate calling an existing(uploaded and instantiated) smart-contract generically. The caller specifies the account id of the smart contract to be called, the selector of the smart contract function(found in the metadata.json in the compiled contract), and one argument to be passed to the smart contract function.
+Runtime-to-contract interactions are enabled through invocations of the pallet-contract's own `bare_call` method, invoked from a custom pallet extrinsic. The example extrinsic is called `call_smart_contract` and is meant to demonstrate calling an existing(uploaded and instantiated) smart-contract generically. The caller specifies the account id of the smart contract to be called, the selector of the smart contract function(found in the metadata.json in the compiled contract), and one argument to be passed to the smart contract function.
 
 ### Build
 

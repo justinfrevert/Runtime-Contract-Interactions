@@ -23,16 +23,16 @@ use sp_runtime::{
 	ApplyExtrinsicResult, MultiSignature,
 };
 
-use sp_std::prelude::*;
-#[cfg(feature = "std")]
-use sp_version::NativeVersion;
-use sp_version::RuntimeVersion;
 use pallet_contracts::{
 	chain_extension::{
 		ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
 	},
 	weights::WeightInfo,
 };
+use sp_std::prelude::*;
+#[cfg(feature = "std")]
+use sp_version::NativeVersion;
+use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
@@ -75,7 +75,7 @@ pub type Index = u32;
 /// A hash of some data used by the chain.
 pub type Hash = sp_core::H256;
 
-pub struct MyExampleExtension;
+pub struct ExampleExtension;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
@@ -164,7 +164,7 @@ pub fn native_version() -> NativeVersion {
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
-impl ChainExtension<Runtime> for MyExampleExtension
+impl ChainExtension<Runtime> for ExampleExtension
 where
 	Runtime: SysConfig + pallet_contracts::Config,
 	<Runtime as SysConfig>::AccountId: UncheckedFrom<<Runtime as SysConfig>::Hash> + AsRef<[u8]>,
@@ -404,7 +404,7 @@ impl pallet_contracts::Config for Runtime {
 	type ContractDeposit = ContractDeposit;
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = MyExampleExtension;
+	type ChainExtension = ExampleExtension;
 	type DeletionQueueDepth = DeletionQueueDepth;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
