@@ -27,9 +27,6 @@ use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-
-use codec::Encode;
-
 use pallet_contracts::{
 	chain_extension::{
 		ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,

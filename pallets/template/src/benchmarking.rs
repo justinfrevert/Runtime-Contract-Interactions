@@ -3,10 +3,7 @@
 use super::*;
 
 #[allow(unused)]
-use crate::{
-	Pallet as Template,
-	ContractEntry
-};
+use crate::{ContractEntry, Pallet as Template};
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite, whitelisted_caller};
 use frame_system::RawOrigin;
 use pallet_contracts::chain_extension::UncheckedFrom;

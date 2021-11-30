@@ -1,17 +1,10 @@
 use crate as pallet_template;
+use frame_support::{
+	parameter_types,
+	weights::{IdentityFee, Weight},
+};
 use frame_system::{self as system};
-use sp_core::H256;
-use sp_runtime::{AccountId32,
-	testing::Header, traits::{BlakeTwo256,
-		IdentityLookup,
-	}};
-use frame_support::{parameter_types, weights::{Weight, IdentityFee}};
 use pallet_balances;
-use pallet_randomness_collective_flip;
-use pallet_timestamp;
-use pallet_utility;
-use std::cell::RefCell;
-use pallet_transaction_payment::CurrencyAdapter;
 use pallet_contracts::{
 	chain_extension::{
 		ChainExtension, Environment, Ext, InitState, Result as ExtensionResult, RetVal,
@@ -19,6 +12,17 @@ use pallet_contracts::{
 	},
 	Schedule,
 };
+use pallet_randomness_collective_flip;
+use pallet_timestamp;
+use pallet_transaction_payment::CurrencyAdapter;
+use pallet_utility;
+use sp_core::H256;
+use sp_runtime::{
+	testing::Header,
+	traits::{BlakeTwo256, IdentityLookup},
+	AccountId32,
+};
+use std::cell::RefCell;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -115,13 +119,12 @@ impl pallet_balances::Config for Test {
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = System;	
+	type AccountStore = System;
 	type MaxLocks = MaxLocks;
 	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = [u8; 8];
 	type WeightInfo = ();
 }
-
 
 impl pallet_transaction_payment::Config for Test {
 	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;

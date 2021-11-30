@@ -109,7 +109,7 @@ mod runtime_extension {
 		// Invoke the extended transfer function with the arguments given to the smart contract
 		// function
 		#[ink(message)]
-		pub fn extended__transfer(
+		pub fn extended_transfer(
 			&mut self,
 			amount: u32,
 			recipient: AccountId,

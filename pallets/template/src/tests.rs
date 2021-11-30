@@ -1,4 +1,4 @@
-use crate::{mock::*, Error, ContractEntry};
+use crate::{mock::*, ContractEntry, Error};
 use frame_support::{assert_ok, weights::Weight};
 use sp_runtime::traits::Hash;
 

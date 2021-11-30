@@ -63,7 +63,7 @@ pub mod tests {
 		let mut test_api = RuntimeInterface::default();
 		let accounts = ink_env::test::default_accounts::<ink_env::DefaultEnvironment>()?;
 
-		test_api.extended__transfer(5, accounts.bob);
+		test_api.extended_transfer(5, accounts.bob);
 
 		let emitted_events = ink_env::test::recorded_events().collect::<Vec<_>>();
 		// Ensure the method that calls the chain extension emitted an event
