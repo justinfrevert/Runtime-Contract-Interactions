@@ -5,8 +5,6 @@ use ink_lang as ink;
 
 #[cfg(test)]
 mod tests;
-// #[cfg(test)]
-// use tests;
 
 #[ink::chain_extension]
 pub trait MyExtension {
@@ -72,8 +70,8 @@ mod runtime_extension {
 	}
 
 	#[ink(event)]
-	pub struct UpdatedNum {
-		result: u32,
+	pub struct ResultNum {
+		number: u32,
 	}
 
 	// impl for functions that demonstrate two way communication between runtime and smart contract
@@ -83,18 +81,19 @@ mod runtime_extension {
 			Self { stored_number: Default::default() }
 		}
 
-		/// Get value from runtime storage, by the current calling address
+		/// Get currently stored value
 		#[ink(message)]
 		pub fn get_value(&mut self) -> u32 {
-			self.stored_number
+            self.env().emit_event(ResultNum { number: self.stored_number.clone() });
+            self.stored_number
 		}
 
 		/// A simple storage function meant to demonstrate calling a smart contract with an argument
-		/// from a custom pallet
+		/// sent from a custom pallet
 		#[ink(message, selector = 0xABCDEF)]
 		pub fn set_value(&mut self, value: u32) -> Result<(), ContractError> {
 			self.stored_number = value;
-			self.env().emit_event(UpdatedNum { result: value });
+			self.env().emit_event(ResultNum { number: value });
 			Ok(())
 		}
 
@@ -103,11 +102,11 @@ mod runtime_extension {
 		#[ink(message)]
 		pub fn store_in_runtime(&mut self, value: u32) -> Result<(), ContractError> {
 			self.env().extension().do_store_in_runtime(value)?;
-			self.env().emit_event(UpdatedNum { result: value });
+			self.env().emit_event(ResultNum { number: value });
 			Ok(())
 		}
 
-		// invoke the extended transfer function with the arguments given to the smart contract
+		// Invoke the extended transfer function with the arguments given to the smart contract
 		// function
 		#[ink(message)]
 		pub fn extended__transfer(
@@ -116,7 +115,7 @@ mod runtime_extension {
 			recipient: AccountId,
 		) -> Result<(), ContractError> {
 			self.env().extension().do_balance_transfer(amount, recipient)?;
-			self.env().emit_event(UpdatedNum { result: amount });
+			self.env().emit_event(ResultNum { number: amount });
 			Ok(())
 		}
 	}

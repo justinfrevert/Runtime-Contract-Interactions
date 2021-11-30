@@ -46,9 +46,8 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 
 	#[pallet::storage]
-	#[pallet::getter(fn get_items)]
-	pub(super) type ContractEntry<T: Config> =
-		StorageMap<_, Blake2_128Concat, T::AccountId, u32, ValueQuery>;
+	pub(super) type ContractEntry<T> = StorageValue<_, u32, ValueQuery>;
+
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events
@@ -110,7 +109,7 @@ pub mod pallet {
 		pub fn insert_number(origin: OriginFor<T>, val: u32) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			// Do something with the value
-			ContractEntry::<T>::insert(who, val);
+			ContractEntry::<T>::put(val);
 			Self::deposit_event(Event::CalledPalletFromContract(val));
 			Ok(())
 		}

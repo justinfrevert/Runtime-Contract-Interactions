@@ -3,7 +3,10 @@
 use super::*;
 
 #[allow(unused)]
-use crate::Pallet as Template;
+use crate::{
+	Pallet as Template,
+	ContractEntry
+};
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite, whitelisted_caller};
 use frame_system::RawOrigin;
 use pallet_contracts::chain_extension::UncheckedFrom;
@@ -19,7 +22,7 @@ benchmarks! {
 		let caller: T::AccountId = whitelisted_caller();
 	}: _ (RawOrigin::Signed(caller.clone()), s)
 	verify {
-		assert_eq!(Template::<T>::get_items(&caller), s);
+		assert_eq!(ContractEntry::<T>::get(), s);
 	}
 }
 

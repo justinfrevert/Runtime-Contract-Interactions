@@ -5,6 +5,10 @@ A Substrate node demonstrating interactions between the runtime and Ink! smart c
 | :exclamation: This code is not audited or considered ready for production, and should not be used as such. |
 | ---------------------------------------------------------------------------------------------------------- |
 
+## Motivation
+
+Examples of contract-to-runtime interactions are frequently sought and asked about. `Chain extensions` are recommended for this case, and there are [several examples of them available](https://paritytech.github.io/ink-docs/macros-attributes/chain-extension). A full example of interactions going in both directions has not been developed in a recent Substrate version.
+
 ## Prerequisites
 
 If you have not already, it is recommended to go through the [ink! smart contracts tutorial](https://docs.substrate.io/tutorials/v3/ink-workshop/pt1/) or otherwise have writted and compiled smart contracts according to the [ink! docs](https://paritytech.github.io/ink-docs/).
@@ -19,10 +23,6 @@ brew install binaryen
 
 cargo install cargo-contract --vers ^0.15 --force --locked
 ```
-
-## Motivation
-
-Examples of contract-to-runtime interactions are frequently sought and asked about. `Chain extensions` are recommended for this case, and there are [several examples of them available](https://paritytech.github.io/ink-docs/macros-attributes/chain-extension). A full example of interactions going in both directions has not been developed in a recent Substrate version.
 
 ### Contract-to-Runtime Interactions
 
@@ -52,7 +52,7 @@ cargo build --release
 ### Testing
 
 To run the tests for the included example pallet, run `cargo test`, in the root.
-To run the tests for the smart contract example, run `cargo +nightly contract test`, or `cargo +nightly test` within the `smart-contracts/example-extension` directory.
+To run the tests for the smart contract example, run `cargo +nightly contract test` within the `smart-contracts/example-extension` directory.
 
 ### Benchmarks
 
@@ -66,7 +66,7 @@ Then, to generate the weights into the pallet template's `weights.rs` file:
 ./target/release/node-template benchmark \
  --chain dev \
  --pallet=pallet_template \
- --extrinsic='\*' \
+ --extrinsic='*' \
  --repeat=20 \
  --steps=50 \
  --execution wasm \

@@ -6,7 +6,6 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-// use frame_support::dispatch::{DispatchErrorWithPostInfo, DispatchResultWithPostInfo};
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
 	RawOrigin,
@@ -183,29 +182,25 @@ where
 			// do_store_in_runtime
 			1 => {
 				let mut env = env.buf_in_buf_out();
-				// retrieve argument that was passed in smart contract invocation
-				let value: u32 = env.read_as()?;
-				let caller = env.ext().caller().clone();
 				let base_weight = RocksDbWeight::get().writes(1);
 				let overhead = <Runtime as pallet_contracts::Config>::Schedule::get()
 					.host_fn_weights
 					.debug_message;
 				env.charge_weight(base_weight.saturating_add(overhead))?;
+				// retrieve argument that was passed in smart contract invocation
+				let value: u32 = env.read_as()?;
+				let caller = env.ext().caller().clone();
 
-				let result = crate::pallet_template::Pallet::<Runtime>::insert_number(
+				crate::pallet_template::Pallet::<Runtime>::insert_number(
 					RawOrigin::Signed(caller).into(),
 					value,
 				)?;
-				env.write(&result.encode(), false, None).map_err(|_| {
-					DispatchError::Other("ChainExtension failed to call store_new_number")
-				})?;
 			},
 			// do_balance_transfer
 			2 => {
 				let mut env = env.buf_in_buf_out();
 				// Retrieve arguments
 				let (transfer_amount, recipient): (u32, AccountId) = env.read_as()?;
-
 				let base_weight = <Runtime as pallet_contracts::Config>::Schedule::get()
 					.host_fn_weights
 					.call_transfer_surcharge;
@@ -217,15 +212,11 @@ where
 				let caller = env.ext().caller().clone();
 				let recipient_account = sp_runtime::MultiAddress::Id(recipient);
 
-				let result = pallet_balances::Pallet::<Runtime>::transfer(
+				pallet_balances::Pallet::<Runtime>::transfer(
 					RawOrigin::Signed(caller).into(),
 					recipient_account,
 					transfer_amount.into(),
 				);
-
-				env.write(&result.encode(), false, None).map_err(|_| {
-					DispatchError::Other("ChainExtension failed to call pallet_balances transfer")
-				})?;
 			},
 			_ => {
 				error!("Called an unregistered `func_id`: {:}", func_id);
