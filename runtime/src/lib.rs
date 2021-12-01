@@ -35,6 +35,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
+pub use codec::Encode;
 pub use frame_support::{
 	construct_runtime,
 	log::{error, info},
@@ -209,11 +210,15 @@ where
 				let caller = env.ext().caller().clone();
 				let recipient_account = sp_runtime::MultiAddress::Id(recipient);
 
-				pallet_balances::Pallet::<Runtime>::transfer(
+				let result = pallet_balances::Pallet::<Runtime>::transfer(
 					RawOrigin::Signed(caller).into(),
 					recipient_account,
 					transfer_amount.into(),
-				);
+				)
+				.encode();
+
+				env.write(&result, false, None)
+					.map_err(|_| "Encountered an error when transferring balance.")?;
 			},
 			_ => {
 				error!("Called an unregistered `func_id`: {:}", func_id);
