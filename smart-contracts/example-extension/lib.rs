@@ -12,13 +12,21 @@ pub trait ChainExtension {
 	// Use the #[ink(extension = {func_id})] syntax to specify the function id.
     // We will `match` on this in the runtime to map this to some custom pallet extrinsic
 	#[ink(extension = 1)]
-    /// Calls func_id 1, defined in the runtime, which receives a number and stores it in
+    /// Calls the runtime chain extension with func_id 1, defined in the runtime, which receives a number and stores it in
     /// a runtime storage value
 	fn do_store_in_runtime(key: u32) -> Result<u32, ContractError>;
 	#[ink(extension = 2)]
-    /// Calls func_id 2, which uses pallet_balances::transfer to perform a transfer of
+    /// Calls the runtime chain extension with func_id 2, which uses pallet_balances::transfer to perform a transfer of
     /// `value` from the sender, to `recipient`
 	fn do_balance_transfer(value: u32, recipient: AccountId) -> Result<u32, ContractError>;
+
+	#[ink(extension = 3)]
+	/// Calls the runtime chain extension with func_id 3, which calls free_balance of pallet_balances for the given account.
+	fn do_get_balance(account: AccountId) -> Result<u32, ContractError>;
+
+	#[ink(extension = 4, returns_result = false)]
+	/// Calls the runtime chain extension with func_id 4, to get the current value held in the runtime storage value.
+	fn do_get_from_runtime() -> u32;
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, scale::Encode, scale::Decode)]
@@ -55,8 +63,6 @@ impl Environment for CustomEnvironment {
 	type Hash = <ink_env::DefaultEnvironment as Environment>::Hash;
 	type BlockNumber = <ink_env::DefaultEnvironment as Environment>::BlockNumber;
 	type Timestamp = <ink_env::DefaultEnvironment as Environment>::Timestamp;
-	// type RentFraction = <ink_env::DefaultEnvironment as Environment>::RentFraction;
-
 	type ChainExtension = ChainExtension;
 }
 
@@ -120,8 +126,25 @@ mod contract_with_extension {
 			recipient: AccountId,
 		) -> Result<(), ContractError> {
 			self.env().extension().do_balance_transfer(amount, recipient)?;
-			self.env().emit_event(ResultNum { number: amount });
 			Ok(())
+		}
+
+		#[ink(message)]
+		/// Get the free balance for the given account. Included mainly for testing
+		pub fn get_balance(
+			&mut self,
+			account: AccountId,
+		) -> Result<(u32), ContractError>  {
+			let value = self.env().extension().do_get_balance(account)?;
+			self.env().emit_event(ResultNum { number: value });
+			Ok(value)
+		}
+
+		#[ink(message)]
+		/// Get the current storage value. Included mainly for testing
+		pub fn get_runtime_storage_value(&mut self,) -> Result<(u32), ContractError>  {
+			let value = self.env().extension().do_get_from_runtime();
+			value
 		}
 	}
 }

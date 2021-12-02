@@ -199,6 +199,7 @@ where
 				let mut env = env.buf_in_buf_out();
 				// Retrieve arguments
 				let (transfer_amount, recipient): (u32, AccountId) = env.read_as()?;
+
 				let base_weight = <Runtime as pallet_contracts::Config>::Schedule::get()
 					.host_fn_weights
 					.call_transfer_surcharge;
@@ -210,15 +211,25 @@ where
 				let caller = env.ext().caller().clone();
 				let recipient_account = sp_runtime::MultiAddress::Id(recipient);
 
-				let result = pallet_balances::Pallet::<Runtime>::transfer(
+				pallet_balances::Pallet::<Runtime>::transfer(
 					RawOrigin::Signed(caller).into(),
 					recipient_account,
 					transfer_amount.into(),
-				)
-				.encode();
-
+				);
+			},
+			3 => {
+				let mut env = env.buf_in_buf_out();
+				// Retrieve argument
+				let recipient: AccountId = env.read_as()?;
+				let result = pallet_balances::Pallet::<Runtime>::free_balance(recipient).encode();
 				env.write(&result, false, None)
-					.map_err(|_| "Encountered an error when transferring balance.")?;
+					.map_err(|_| "Encountered an error when querying balance.")?;
+			},
+			4 => {
+				let mut env = env.buf_in_buf_out();
+				let result = TemplateModule::get_value().encode();
+				env.write(&result, false, None)
+					.map_err(|_| "Encountered an error when retrieving runtime storage value.")?;
 			},
 			_ => {
 				error!("Called an unregistered `func_id`: {:}", func_id);

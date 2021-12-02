@@ -47,6 +47,7 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 
 	#[pallet::storage]
+	#[pallet::getter(fn get_value)]
 	pub(super) type ContractEntry<T> = StorageValue<_, u32, ValueQuery>;
 
 	// Pallets use events to inform users when important changes are made.
@@ -54,16 +55,16 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Event to display when call is made from a smart contract to the extrinsic
-		CalledContractFromPallet(T::AccountId),
 		/// Event to display when call is made from the extrinsic to a smart contract
+		CalledContractFromPallet(T::AccountId),
+		/// Event to display when call is made from a smart contract to the extrinsic
 		CalledPalletFromContract(u32),
 	}
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
-		ArgumentTooLarge,
+		InputTooLarge,
 	}
 
 	#[pallet::call]
@@ -94,7 +95,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 			// Check against unbounded input
-			ensure!(selector.len() < MAX_LENGTH, Error::<T>::ArgumentTooLarge);
+			ensure!(selector.len() < MAX_LENGTH, Error::<T>::InputTooLarge);
 			// Amount to transfer
 			let value: BalanceOf<T> = Default::default();
 			let mut arg_enc: Vec<u8> = arg.encode();
