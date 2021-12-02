@@ -112,7 +112,7 @@ The smart contract function is less generic than the extrinsic used above, and s
 
 ### Testing
 
-To run the tests for the included example pallet, run `cargo test`, in the root.
+To run the tests for the included example pallet, run `cargo test` in the root.
 To run the tests for the smart contract example, run `cargo +nightly contract test` within the `smart-contracts/example-extension` directory.
 
 ### Benchmarks
@@ -123,7 +123,7 @@ Build node with benchmarks enabled:
 
 Then, to generate the weights into the pallet template's `weights.rs` file:
 
-```zsh
+```sh
 ./target/release/node-template benchmark \
  --chain dev \
  --pallet=pallet_template \

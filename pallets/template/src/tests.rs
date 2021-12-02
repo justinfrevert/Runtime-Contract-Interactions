@@ -3,7 +3,7 @@ use frame_support::{assert_ok, weights::Weight};
 use sp_runtime::traits::Hash;
 
 #[test]
-fn it_accepts_calls_from_chain_extension() {
+fn stores_value() {
 	let origin = Origin::signed(ALICE);
 	let chain_extension_input = 5;
 	ExtBuilder::default().build().execute_with(|| {
