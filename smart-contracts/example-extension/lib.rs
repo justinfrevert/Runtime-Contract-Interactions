@@ -3,6 +3,9 @@
 use ink_env::{AccountId, Environment};
 use ink_lang as ink;
 
+#[cfg(test)]
+mod tests;
+
 #[ink::chain_extension]
 pub trait ChainExtension {
 	type ErrorCode = ContractError;
@@ -67,6 +70,9 @@ impl Environment for CustomEnvironment {
 /// A smart contract with a custom environment, necessary for the chain extension
 mod contract_with_extension {
 	use super::ContractError;
+
+	#[cfg(test)]
+	use crate::tests;
 
 	/// Defines the storage of our contract.
 	#[ink(storage)]
