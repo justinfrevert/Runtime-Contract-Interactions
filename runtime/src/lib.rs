@@ -217,6 +217,7 @@ where
 					transfer_amount.into(),
 				);
 			},
+			// do_get_balance
 			3 => {
 				let mut env = env.buf_in_buf_out();
 				// Retrieve argument
@@ -225,6 +226,7 @@ where
 				env.write(&result, false, None)
 					.map_err(|_| "Encountered an error when querying balance.")?;
 			},
+			// do_get_from_runtime
 			4 => {
 				let mut env = env.buf_in_buf_out();
 				let result = TemplateModule::get_value().encode();

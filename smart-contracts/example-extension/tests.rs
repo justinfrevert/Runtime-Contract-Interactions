@@ -51,7 +51,6 @@ pub mod tests {
 	#[ink::test]
 	fn extended_set_and_get_emits_event() {
 		struct MockedExtension;
-		let mocked_return = 0;
 		mock_chain_extension!(MockedExtension, RUNTIME_STORE_FN_ID, UNUSED_RETURN);
 		let mut test_api = RuntimeInterface::default();
 
@@ -63,10 +62,10 @@ pub mod tests {
 
 	#[ink::test]
 	fn extended_transfer_works() {
-		struct ExtensionForTransfer;
-		struct ExtensionForBalanceCheck;
+		struct MockedTransferExtension;
+		struct MockedBalanceCheckExtension;
 
-		mock_chain_extension!(ExtensionForTransfer, EXTENDED_TRANSFER_FN_ID, UNUSED_RETURN);
+		mock_chain_extension!(MockedTransferExtension, EXTENDED_TRANSFER_FN_ID, UNUSED_RETURN);
 
 		let mut test_api = RuntimeInterface::default();
 		let accounts = ink_env::test::default_accounts::<ink_env::DefaultEnvironment>()?;
@@ -74,7 +73,7 @@ pub mod tests {
 		test_api.extended_transfer(5, accounts.bob);
 
 		// register new mock chain extension in context of test to use different extended function
-		mock_chain_extension!(ExtensionForBalanceCheck, EXTENDED_BALANCE_FN_ID, TRANSFER_AMOUNT);
+		mock_chain_extension!(MockedBalanceCheckExtension, EXTENDED_BALANCE_FN_ID, TRANSFER_AMOUNT);
 
 		// get balance from balances pallet for django into recent event
 		let result = test_api.get_balance(accounts.django);

@@ -85,7 +85,7 @@ mod contract_with_extension {
 		number: u32,
 	}
 
-	// impl for functions that demonstrate two way communication between runtime and smart contract
+	// impl for smart contract functions that demonstrate two way communication between runtime and smart contract
 	impl RuntimeInterface {
 		#[ink(constructor)]
 		pub fn default() -> Self {
