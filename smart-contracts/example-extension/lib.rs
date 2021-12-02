@@ -3,9 +3,6 @@
 use ink_env::{AccountId, Environment};
 use ink_lang as ink;
 
-#[cfg(test)]
-mod tests;
-
 #[ink::chain_extension]
 pub trait ChainExtension {
 	type ErrorCode = ContractError;
@@ -71,9 +68,6 @@ impl Environment for CustomEnvironment {
 mod contract_with_extension {
 	use super::ContractError;
 
-	#[cfg(test)]
-	use crate::tests;
-
 	/// Defines the storage of our contract.
 	#[ink(storage)]
 	pub struct RuntimeInterface {
@@ -134,7 +128,7 @@ mod contract_with_extension {
 		pub fn get_balance(
 			&mut self,
 			account: AccountId,
-		) -> Result<(u32), ContractError>  {
+		) -> Result<u32, ContractError>  {
 			let value = self.env().extension().do_get_balance(account)?;
 			self.env().emit_event(ResultNum { number: value });
 			Ok(value)
@@ -142,7 +136,7 @@ mod contract_with_extension {
 
 		#[ink(message)]
 		/// Get the current storage value. Included mainly for testing
-		pub fn get_runtime_storage_value(&mut self,) -> Result<(u32), ContractError>  {
+		pub fn get_runtime_storage_value(&mut self,) -> Result<u32, ContractError>  {
 			let value = self.env().extension().do_get_from_runtime();
 			value
 		}
