@@ -40,10 +40,12 @@ pub use frame_support::{
 	construct_runtime,
 	log::{error, info},
 	parameter_types,
+	dispatch::DispatchErrorWithPostInfo,
 	traits::{KeyOwnerProofSystem, Randomness, StorageInfo},
 	weights::{
+		PostDispatchInfo,
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
-		DispatchClass, IdentityFee, Weight,
+		DispatchClass, IdentityFee, Weight, DispatchInfo
 	},
 	BoundedVec, StorageValue,
 };
@@ -180,7 +182,9 @@ where
 			// do_store_in_runtime
 			1 => {
 				let mut env = env.buf_in_buf_out();
+				// Capture weight for the main action being performed by the extrinsic
 				let base_weight = RocksDbWeight::get().writes(1);
+				// Add some weight for the contract invocation
 				let overhead = <Runtime as pallet_contracts::Config>::Schedule::get()
 					.host_fn_weights
 					.debug_message;
@@ -199,7 +203,6 @@ where
 				let mut env = env.buf_in_buf_out();
 				// Retrieve arguments
 				let (transfer_amount, recipient): (u32, AccountId) = env.read_as()?;
-
 				let base_weight = <Runtime as pallet_contracts::Config>::Schedule::get()
 					.host_fn_weights
 					.call_transfer_surcharge;
@@ -221,8 +224,8 @@ where
 			3 => {
 				let mut env = env.buf_in_buf_out();
 				// Retrieve argument
-				let recipient: AccountId = env.read_as()?;
-				let result = pallet_balances::Pallet::<Runtime>::free_balance(recipient).encode();
+				let account: AccountId = env.read_as()?;
+				let result = pallet_balances::Pallet::<Runtime>::free_balance(account).encode();
 				env.write(&result, false, None)
 					.map_err(|_| "Encountered an error when querying balance.")?;
 			},
