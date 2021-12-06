@@ -181,16 +181,17 @@ where
 		match func_id {
 			// do_store_in_runtime
 			1 => {
+				use pallet_template::WeightInfo;
 				let mut env = env.buf_in_buf_out();
+				// retrieve argument that was passed in smart contract invocation
+				let value: u32 = env.read_as()?;
 				// Capture weight for the main action being performed by the extrinsic
-				let base_weight = RocksDbWeight::get().writes(1);
+				let base_weight: Weight = <Runtime as pallet_template::Config>::WeightInfo::insert_number(value);
 				// Add some weight for the contract invocation
 				let overhead = <Runtime as pallet_contracts::Config>::Schedule::get()
 					.host_fn_weights
 					.debug_message;
 				env.charge_weight(base_weight.saturating_add(overhead))?;
-				// retrieve argument that was passed in smart contract invocation
-				let value: u32 = env.read_as()?;
 				let caller = env.ext().caller().clone();
 
 				crate::pallet_template::Pallet::<Runtime>::insert_number(
@@ -218,7 +219,7 @@ where
 					RawOrigin::Signed(caller).into(),
 					recipient_account,
 					transfer_amount.into(),
-				);
+				).map_err(|e| e.error)?;
 			},
 			// do_get_balance
 			3 => {
