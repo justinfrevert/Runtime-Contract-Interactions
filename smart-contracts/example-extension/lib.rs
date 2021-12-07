@@ -30,11 +30,13 @@ pub trait ChainExtension {
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 pub enum ContractError {
 	FailToCallRuntime,
+	UnknownStatusCode,
+	InvalidScaleEncoding
 }
 
 impl From<scale::Error> for ContractError {
 	fn from(_: scale::Error) -> Self {
-		panic!("encountered unexpected invalid SCALE encoding")
+		ContractError::InvalidScaleEncoding
 	}
 }
 
@@ -43,7 +45,7 @@ impl ink_env::chain_extension::FromStatusCode for ContractError {
 		match status_code {
 			0 => Ok(()),
 			1 => Err(Self::FailToCallRuntime),
-			_ => panic!("encountered unknown status code"),
+			_ => Err(Self::UnknownStatusCode),
 		}
 	}
 }

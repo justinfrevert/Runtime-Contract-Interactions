@@ -219,7 +219,7 @@ where
 					RawOrigin::Signed(caller).into(),
 					recipient_account,
 					transfer_amount.into(),
-				).map_err(|e| e.error)?;
+				).map_err(|dispatch_result| dispatch_result.error)?;
 			},
 			// do_get_balance
 			3 => {
