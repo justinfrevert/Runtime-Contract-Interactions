@@ -5,11 +5,15 @@
 | :exclamation: This code is not audited or considered ready for production, and should not be used in a production-like environment without any necessary review and changes |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
+## Introduction
+
+This Substrate project demonstrates through example how to interact between Substrate runtimes and ink! smart contracts through extrinsic calls and ink! chain extensions.
+
 ## Motivation
 
 Sharing Substrate runtime functionality with ink! smart contracts is a powerful feature. Chains with unique runtime functionality can create rich application developer ecosystems by exposing choice pieces of their runtime. The inverse interaction of runtime to ink! smart contract calls may be similarly valuable. Runtime logic can query or set important context information at the smart contracts level.
 
-Both of the types of interactions described above are asked about in the context of support, and a recent example demonstrating how to perform these interactions has not been developed. This project demonstrates through example how to perform interactions in both directions, through an extrinsic call, and an ink! chain extension.
+Both of the types of interactions described above are asked about in the context of support, and a recent example demonstrating how to perform these interactions has not been developed.
 
 ## Prerequisites
 
