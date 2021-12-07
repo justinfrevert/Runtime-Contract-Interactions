@@ -7,7 +7,9 @@
 
 ## Motivation
 
-Examples of contract-to-runtime interactions are asked about in the context of Substrate support. `Chain extensions` are recommended for this case, and there are [several examples of them available](https://paritytech.github.io/ink-docs/macros-attributes/chain-extension). An example repository demonstrating chain extensions as well as pallet-to-contract calls has not been developed in a recent Substrate version.
+Sharing Substrate runtime functionality with ink! smart contracts is a powerful feature. Chains with unique runtime functionality can create rich application developer ecosystems by exposing choice pieces of their runtime. The inverse interaction of runtime to ink! smart contract calls may be similarly valuable. Runtime logic can query or set important context information at the smart contracts level.
+
+Both of the types of interactions described above are asked about in the context of support, and a recent example demonstrating how to perform these interactions has not been developed. This project demonstrates through example how to perform interactions in both directions, through an extrinsic call, and an ink! chain extension.
 
 ## Prerequisites
 
