@@ -40,11 +40,12 @@ impl From<scale::Error> for ContractError {
 	}
 }
 
+// Define error codes here for error situations not sufficiently captured in `Result`s returned from runtime.
+// Then, return error code from runtime chain extension using Ok(RetVal::Converging({your error code}))
 impl ink_env::chain_extension::FromStatusCode for ContractError {
 	fn from_status_code(status_code: u32) -> Result<(), Self> {
 		match status_code {
 			0 => Ok(()),
-			1 => Err(Self::FailToCallRuntime),
 			_ => Err(Self::UnknownStatusCode),
 		}
 	}
@@ -121,7 +122,7 @@ mod contract_with_extension {
 			amount: u32,
 			recipient: AccountId,
 		) -> Result<(), ContractError> {
-			self.env().extension().do_balance_transfer(amount, recipient)?;
+		 	self.env().extension().do_balance_transfer(amount, recipient)?;
 			Ok(())
 		}
 
@@ -131,9 +132,8 @@ mod contract_with_extension {
 			&mut self,
 			account: AccountId,
 		) -> Result<u32, ContractError>  {
-			let value = self.env().extension().do_get_balance(account)?;
-			self.env().emit_event(ResultNum { number: value });
-			Ok(value)
+			let value = self.env().extension().do_get_balance(account);
+			value
 		}
 
 		#[ink(message)]
