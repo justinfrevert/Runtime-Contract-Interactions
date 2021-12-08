@@ -220,7 +220,7 @@ where
 					recipient_account,
 					transfer_amount.into(),
 				)
-				.map_err(|dispatch_result| dispatch_result.error)?;
+				.map_err(|d| d.error)?;
 			},
 			// do_get_balance
 			3 => {
