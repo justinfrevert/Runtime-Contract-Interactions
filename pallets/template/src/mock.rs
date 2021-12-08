@@ -3,15 +3,9 @@ use frame_support::{
 	parameter_types,
 	weights::{IdentityFee, Weight},
 };
-use frame_system::{self as system};
+use frame_system;
 use pallet_balances;
-use pallet_contracts::{
-	chain_extension::{
-		ChainExtension, Environment, Ext, InitState, Result as ExtensionResult, RetVal,
-		ReturnFlags, SysConfig, UncheckedFrom,
-	},
-	Schedule,
-};
+use pallet_contracts::Schedule;
 use pallet_randomness_collective_flip;
 use pallet_timestamp;
 use pallet_transaction_payment::CurrencyAdapter;
@@ -37,11 +31,6 @@ impl Default for ExtBuilder {
 	}
 }
 impl ExtBuilder {
-	pub fn existential_deposit(mut self, existential_deposit: u64) -> Self {
-		self.existential_deposit = existential_deposit;
-		self
-	}
-
 	pub fn set_associated_consts(&self) {
 		EXISTENTIAL_DEPOSIT.with(|v| *v.borrow_mut() = self.existential_deposit);
 	}
