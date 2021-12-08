@@ -38,14 +38,13 @@ use sp_version::RuntimeVersion;
 pub use codec::Encode;
 pub use frame_support::{
 	construct_runtime,
+	dispatch::DispatchErrorWithPostInfo,
 	log::{error, info},
 	parameter_types,
-	dispatch::DispatchErrorWithPostInfo,
 	traits::{KeyOwnerProofSystem, Randomness, StorageInfo},
 	weights::{
-		PostDispatchInfo,
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
-		DispatchClass, IdentityFee, Weight, DispatchInfo
+		DispatchClass, DispatchInfo, IdentityFee, PostDispatchInfo, Weight,
 	},
 	BoundedVec, StorageValue,
 };
@@ -186,7 +185,8 @@ where
 				// retrieve argument that was passed in smart contract invocation
 				let value: u32 = env.read_as()?;
 				// Capture weight for the main action being performed by the extrinsic
-				let base_weight: Weight = <Runtime as pallet_template::Config>::WeightInfo::insert_number(value);
+				let base_weight: Weight =
+					<Runtime as pallet_template::Config>::WeightInfo::insert_number(value);
 				// Add some weight for the contract invocation
 				let overhead = <Runtime as pallet_contracts::Config>::Schedule::get()
 					.host_fn_weights
@@ -219,7 +219,8 @@ where
 					RawOrigin::Signed(caller).into(),
 					recipient_account,
 					transfer_amount.into(),
-				).map_err(|dispatch_result| dispatch_result.error)?;
+				)
+				.map_err(|dispatch_result| dispatch_result.error)?;
 			},
 			// do_get_balance
 			3 => {

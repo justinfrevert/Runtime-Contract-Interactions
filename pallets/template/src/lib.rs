@@ -83,8 +83,8 @@ pub mod pallet {
 		/// [specify a selector](https://paritytech.github.io/ink-docs/macros-attributes/selector/) in
 		/// the smart contract itself.
 		/// * `arg` - An argument to be passed to the smart contract.
-		/// * `gas_limit` - The gas limit passed to the contract bare_call.
-		/// This example should work when given a value of around 10000000000
+		/// * `gas_limit` - The gas limit passed to the contract bare_call. This example should work
+		///   when given a value of around 10000000000
 		pub fn call_smart_contract(
 			origin: OriginFor<T>,
 			dest: T::AccountId,
