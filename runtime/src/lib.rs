@@ -7,8 +7,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use frame_system::{
-	limits::{BlockLength, BlockWeights},
-	RawOrigin,
+	limits::{BlockLength, BlockWeights}
 };
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
@@ -23,12 +22,7 @@ use sp_runtime::{
 	ApplyExtrinsicResult, MultiSignature,
 };
 
-use pallet_contracts::{
-	chain_extension::{
-		ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
-	},
-	weights::WeightInfo,
-};
+use pallet_contracts::weights::WeightInfo;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -46,7 +40,7 @@ pub use frame_support::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		DispatchClass, DispatchInfo, IdentityFee, PostDispatchInfo, Weight,
 	},
-	BoundedVec, StorageValue,
+	BoundedVec,
 };
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
@@ -77,7 +71,8 @@ pub type Index = u32;
 /// A hash of some data used by the chain.
 pub type Hash = sp_core::H256;
 
-pub struct ExampleExtension;
+mod chain_extension;
+use chain_extension::ExampleExtension;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
@@ -165,90 +160,6 @@ pub fn native_version() -> NativeVersion {
 }
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
-
-impl ChainExtension<Runtime> for ExampleExtension
-where
-	Runtime: SysConfig + pallet_contracts::Config,
-	<Runtime as SysConfig>::AccountId: UncheckedFrom<<Runtime as SysConfig>::Hash> + AsRef<[u8]>,
-{
-	fn call<E: Ext>(func_id: u32, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
-	where
-		E: Ext<T = Runtime>,
-		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
-	{
-		let mut env = env.buf_in_buf_out();
-		let contracts_overhead = <Runtime as pallet_contracts::Config>::Schedule::get()
-			.host_fn_weights
-			.debug_message;
-
-		// Match on function id assigned in the contract
-		match func_id {
-			// do_store_in_runtime
-			1 => {
-				use pallet_template::WeightInfo;
-				// retrieve argument that was passed in smart contract invocation
-				let value: u32 = env.read_as()?;
-				// Capture weight for the main action being performed by the extrinsic
-				let base_weight: Weight =
-					<Runtime as pallet_template::Config>::WeightInfo::insert_number(value);
-				env.charge_weight(base_weight.saturating_add(contracts_overhead))?;
-				let caller = env.ext().caller().clone();
-
-				crate::pallet_template::Pallet::<Runtime>::insert_number(
-					RawOrigin::Signed(caller).into(),
-					value,
-				)?;
-			},
-			// do_balance_transfer
-			2 => {
-				// Retrieve arguments
-				let base_weight = <Runtime as pallet_contracts::Config>::Schedule::get()
-					.host_fn_weights
-					.call_transfer_surcharge;
-				env.charge_weight(base_weight.saturating_add(contracts_overhead))?;
-
-				let (transfer_amount, recipient): (u32, AccountId) = env.read_as()?;
-				let recipient_account = sp_runtime::MultiAddress::Id(recipient);
-				let caller = env.ext().caller().clone();
-
-				pallet_balances::Pallet::<Runtime>::transfer(
-					RawOrigin::Signed(caller).into(),
-					recipient_account,
-					transfer_amount.into(),
-				)
-				.map_err(|d| d.error)?;
-			},
-			3 | 4 => {
-				let base_weight = RocksDbWeight::get().reads(1);
-				env.charge_weight(base_weight.saturating_add(contracts_overhead))?;
-
-				match func_id {
-					// do_get_balance
-					3 => {
-						let account: AccountId = env.read_as()?;
-						let result = pallet_balances::Pallet::<Runtime>::free_balance(account).encode();
-
-						env.write(&result, false, None)
-							.map_err(|_| "Encountered an error when querying balance.")?;
-					},
-					// do_get_from_runtime
-					4 => {
-						let result = TemplateModule::get_value().encode();
-						env.write(&result, false, None)
-							.map_err(|_| "Encountered an error when retrieving runtime storage value.")?;
-					},
-					_ => unreachable!()
-				}
-			}
-			_ => {
-				error!("Called an unregistered `func_id`: {:}", func_id);
-				return Err(DispatchError::Other("Unimplemented func_id"))
-			},
-		}
-		// No error, return status code `0`, indicating `Ok(())`
-		Ok(RetVal::Converging(0))
-	}
-}
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
