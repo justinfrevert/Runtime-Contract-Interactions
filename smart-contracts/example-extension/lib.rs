@@ -135,6 +135,7 @@ mod contract_with_extension {
 		/// Get the free balance for the given account. Included mainly for testing
 		pub fn get_balance(&mut self, account: AccountId) -> Result<u32, ContractError> {
 			let value = self.env().extension().do_get_balance(account);
+			self.env().emit_event(ResultNum { number: value? });
 			value
 		}
 
@@ -142,6 +143,7 @@ mod contract_with_extension {
 		/// Get the current storage value. Included mainly for testing
 		pub fn get_runtime_storage_value(&mut self) -> Result<u32, ContractError> {
 			let value = self.env().extension().do_get_from_runtime();
+			self.env().emit_event(ResultNum { number: value? });
 			value
 		}
 	}

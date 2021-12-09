@@ -176,22 +176,22 @@ where
 		E: Ext<T = Runtime>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
+		let mut env = env.buf_in_buf_out();
+		let contracts_overhead = <Runtime as pallet_contracts::Config>::Schedule::get()
+			.host_fn_weights
+			.debug_message;
+
 		// Match on function id assigned in the contract
 		match func_id {
 			// do_store_in_runtime
 			1 => {
 				use pallet_template::WeightInfo;
-				let mut env = env.buf_in_buf_out();
 				// retrieve argument that was passed in smart contract invocation
 				let value: u32 = env.read_as()?;
 				// Capture weight for the main action being performed by the extrinsic
 				let base_weight: Weight =
 					<Runtime as pallet_template::Config>::WeightInfo::insert_number(value);
-				// Add some weight for the contract invocation
-				let overhead = <Runtime as pallet_contracts::Config>::Schedule::get()
-					.host_fn_weights
-					.debug_message;
-				env.charge_weight(base_weight.saturating_add(overhead))?;
+				env.charge_weight(base_weight.saturating_add(contracts_overhead))?;
 				let caller = env.ext().caller().clone();
 
 				crate::pallet_template::Pallet::<Runtime>::insert_number(
@@ -201,19 +201,15 @@ where
 			},
 			// do_balance_transfer
 			2 => {
-				let mut env = env.buf_in_buf_out();
 				// Retrieve arguments
-				let (transfer_amount, recipient): (u32, AccountId) = env.read_as()?;
 				let base_weight = <Runtime as pallet_contracts::Config>::Schedule::get()
 					.host_fn_weights
 					.call_transfer_surcharge;
-				let overhead = <Runtime as pallet_contracts::Config>::Schedule::get()
-					.host_fn_weights
-					.debug_message;
-				env.charge_weight(base_weight.saturating_add(overhead))?;
+				env.charge_weight(base_weight.saturating_add(contracts_overhead))?;
 
-				let caller = env.ext().caller().clone();
+				let (transfer_amount, recipient): (u32, AccountId) = env.read_as()?;
 				let recipient_account = sp_runtime::MultiAddress::Id(recipient);
+				let caller = env.ext().caller().clone();
 
 				pallet_balances::Pallet::<Runtime>::transfer(
 					RawOrigin::Signed(caller).into(),
@@ -222,27 +218,34 @@ where
 				)
 				.map_err(|d| d.error)?;
 			},
-			// do_get_balance
-			3 => {
-				let mut env = env.buf_in_buf_out();
-				// Retrieve argument
-				let account: AccountId = env.read_as()?;
-				let result = pallet_balances::Pallet::<Runtime>::free_balance(account).encode();
-				env.write(&result, false, None)
-					.map_err(|_| "Encountered an error when querying balance.")?;
-			},
-			// do_get_from_runtime
-			4 => {
-				let mut env = env.buf_in_buf_out();
-				let result = TemplateModule::get_value().encode();
-				env.write(&result, false, None)
-					.map_err(|_| "Encountered an error when retrieving runtime storage value.")?;
-			},
+			3 | 4 => {
+				let base_weight = RocksDbWeight::get().reads(1);
+				env.charge_weight(base_weight.saturating_add(contracts_overhead))?;
+
+				match func_id {
+					// do_get_balance
+					3 => {
+						let account: AccountId = env.read_as()?;
+						let result = pallet_balances::Pallet::<Runtime>::free_balance(account).encode();
+
+						env.write(&result, false, None)
+							.map_err(|_| "Encountered an error when querying balance.")?;
+					},
+					// do_get_from_runtime
+					4 => {
+						let result = TemplateModule::get_value().encode();
+						env.write(&result, false, None)
+							.map_err(|_| "Encountered an error when retrieving runtime storage value.")?;
+					},
+					_ => unreachable!()
+				}
+			}
 			_ => {
 				error!("Called an unregistered `func_id`: {:}", func_id);
 				return Err(DispatchError::Other("Unimplemented func_id"))
 			},
 		}
+		// No error, return status code `0`, indicating `Ok(())`
 		Ok(RetVal::Converging(0))
 	}
 }
