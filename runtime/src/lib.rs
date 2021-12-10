@@ -6,9 +6,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-use frame_system::{
-	limits::{BlockLength, BlockWeights}
-};
+use frame_system::limits::{BlockLength, BlockWeights};
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };

@@ -113,7 +113,7 @@ pub mod pallet {
 			)
 			.result?;
 
-			Self::deposit_event(Event::CalledContractFromPallet(dest.clone()));
+			Self::deposit_event(Event::CalledContractFromPallet(dest));
 			Ok(())
 		}
 

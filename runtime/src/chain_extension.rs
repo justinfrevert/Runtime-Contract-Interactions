@@ -1,19 +1,14 @@
-use pallet_contracts::{
-	chain_extension::{
-		ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
-	}
-};
 use frame_support::{
 	log::error,
-	weights::{
-		constants::RocksDbWeight,
-		Weight,
-	},
+	weights::{constants::RocksDbWeight, Weight},
+};
+use frame_system::RawOrigin;
+use pallet_contracts::chain_extension::{
+	ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
 };
 use sp_runtime::{traits::StaticLookup, DispatchError};
-use frame_system::RawOrigin;
 // use sp_runtime::traits::StaticLookup;
-use crate::{TemplateModule, Encode};
+use crate::{Encode, TemplateModule};
 
 use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get;
 
@@ -30,9 +25,8 @@ where
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
 		let mut env = env.buf_in_buf_out();
-		let contracts_overhead = <T as pallet_contracts::Config>::Schedule::get()
-			.host_fn_weights
-			.debug_message;
+		let contracts_overhead =
+			<T as pallet_contracts::Config>::Schedule::get().host_fn_weights.debug_message;
 
 		// Match on function id assigned in the contract
 		match func_id {
@@ -61,12 +55,12 @@ where
 				env.charge_weight(base_weight.saturating_add(contracts_overhead))?;
 
 				let (transfer_amount, recipient_account): (u32, T::AccountId) = env.read_as()?;
-                let recipient = T::Lookup::unlookup(recipient_account);
+				let recipient = T::Lookup::unlookup(recipient_account);
 				let caller = env.ext().caller().clone();
 
 				pallet_balances::Pallet::<T>::transfer(
 					RawOrigin::Signed(caller).into(),
-                    recipient,
+					recipient,
 					transfer_amount.into(),
 				)
 				.map_err(|d| d.error)?;
@@ -87,12 +81,13 @@ where
 					// do_get_from_runtime
 					4 => {
 						let result = TemplateModule::get_value().encode();
-						env.write(&result, false, None)
-							.map_err(|_| "Encountered an error when retrieving runtime storage value.")?;
+						env.write(&result, false, None).map_err(|_| {
+							"Encountered an error when retrieving runtime storage value."
+						})?;
 					},
-					_ => unreachable!()
+					_ => unreachable!(),
 				}
-			}
+			},
 			_ => {
 				error!("Called an unregistered `func_id`: {:}", func_id);
 				return Err(DispatchError::Other("Unimplemented func_id"))

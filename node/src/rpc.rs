@@ -52,7 +52,7 @@ where
 	// to call into the runtime.
 	// `io.extend_with(YourRpcTrait::to_delegate(YourRpcStruct::new(ReferenceToClient, ...)));`
 
-	io.extend_with(ContractsApi::to_delegate(Contracts::new(client.clone())));
+	io.extend_with(ContractsApi::to_delegate(Contracts::new(client)));
 
 	io
 }
