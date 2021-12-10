@@ -7,10 +7,9 @@ use pallet_contracts::chain_extension::{
 	ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
 };
 use sp_runtime::{traits::StaticLookup, DispatchError};
-// use sp_runtime::traits::StaticLookup;
-use crate::{Encode, TemplateModule};
-
-use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get;
+use crate::{
+	sp_api_hidden_includes_construct_runtime::hidden_include::traits::Get, Encode, TemplateModule,
+};
 
 pub struct ExampleExtension;
 
