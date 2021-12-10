@@ -42,7 +42,7 @@ default-features = false
 features = ['derive']
 version = '1.0'
 
-[dev-dependencies.sp-core]
+[dependencies.sp-core]
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
 tag = 'monthly-2021-10'
@@ -54,11 +54,58 @@ git = 'https://github.com/paritytech/substrate.git'
 tag = 'monthly-2021-10'
 version = '4.0.0-dev'
 
-[dev-dependencies.sp-runtime]
+[dependencies.sp-runtime]
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
 tag = 'monthly-2021-10'
 version = '4.0.0-dev'
+
+[dev-dependencies.pallet-balances]
+default-features = false
+git = 'https://github.com/paritytech/substrate.git'
+tag = 'monthly-2021-10'
+version = '4.0.0-dev'
+
+[dependencies.sp-std]
+default-features = false
+git = 'https://github.com/paritytech/substrate.git'
+tag = 'monthly-2021-10'
+version = '4.0.0-dev'
+
+[dev-dependencies.pallet-timestamp]
+default-features = false
+git = 'https://github.com/paritytech/substrate.git'
+tag = 'monthly-2021-10'
+version = '4.0.0-dev'
+
+[dev-dependencies.pallet-randomness-collective-flip]
+version = "4.0.0-dev"
+git = 'https://github.com/paritytech/substrate.git'
+tag = 'monthly-2021-10'
+
+[dev-dependencies.pallet-utility]
+version = "4.0.0-dev"
+git = 'https://github.com/paritytech/substrate.git'
+tag = 'monthly-2021-10'
+
+[dev-dependencies.pallet-transaction-payment]
+version = "4.0.0-dev"
+git = 'https://github.com/paritytech/substrate.git'
+tag = 'monthly-2021-10'
+
+[dependencies.pallet-contracts]
+default-features = false
+git = 'https://github.com/paritytech/substrate.git'
+tag = 'monthly-2021-10'
+version = '4.0.0-dev'
+
+[dependencies.rand]
+version = "0.7.3"
+optional = true
+default-features = false
+
+[dependencies.log]
+version = '0.4.14'
 
 [features]
 default = ['std']
@@ -69,5 +116,7 @@ std = [
     'frame-support/std',
     'frame-system/std',
     'frame-benchmarking/std',
+    'pallet-contracts/std',
+    'rand/std',
 ]
 try-runtime = ['frame-support/try-runtime']
