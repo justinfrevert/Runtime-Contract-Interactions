@@ -25,7 +25,12 @@ where
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
 		let mut env = env.buf_in_buf_out();
-		let contracts_overhead =
+
+		// Use the weight of `debug_message` as the baseline weight overhead for the chain extension
+		// functions. `debug_message` is one reasonable choice as it immediately returns, which
+		// represents the function of the chain extension well, as they don't do much beyond call an
+		// already-weighted extrinsic.
+		let extension_overhead =
 			<T as pallet_contracts::Config>::Schedule::get().host_fn_weights.debug_message;
 
 		// Match on function id assigned in the contract
@@ -38,7 +43,7 @@ where
 				// Capture weight for the main action being performed by the extrinsic
 				let base_weight: Weight =
 					<T as pallet_template::Config>::WeightInfo::insert_number(value);
-				env.charge_weight(base_weight.saturating_add(contracts_overhead))?;
+				env.charge_weight(base_weight.saturating_add(extension_overhead))?;
 				let caller = env.ext().caller().clone();
 
 				crate::pallet_template::Pallet::<T>::insert_number(
@@ -52,7 +57,7 @@ where
 				let base_weight = <T as pallet_contracts::Config>::Schedule::get()
 					.host_fn_weights
 					.call_transfer_surcharge;
-				env.charge_weight(base_weight.saturating_add(contracts_overhead))?;
+				env.charge_weight(base_weight.saturating_add(extension_overhead))?;
 
 				let (transfer_amount, recipient_account): (u32, T::AccountId) = env.read_as()?;
 				let recipient = T::Lookup::unlookup(recipient_account);
@@ -67,7 +72,7 @@ where
 			},
 			3 | 4 => {
 				let base_weight = RocksDbWeight::get().reads(1);
-				env.charge_weight(base_weight.saturating_add(contracts_overhead))?;
+				env.charge_weight(base_weight.saturating_add(extension_overhead))?;
 
 				match func_id {
 					// do_get_balance
